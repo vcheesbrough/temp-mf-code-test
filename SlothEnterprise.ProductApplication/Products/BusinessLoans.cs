@@ -27,17 +27,13 @@ namespace SlothEnterprise.ProductApplication.Products
 
         public int ExternalServiceRequest(ISellerApplication application)
         {
-            var result = _businessLoansService.SubmitApplicationFor(new CompanyDataRequest
-            {
-                CompanyFounded = application.CompanyData.Founded,
-                CompanyNumber = application.CompanyData.Number,
-                CompanyName = application.CompanyData.Name,
-                DirectorName = application.CompanyData.DirectorName
-            }, new LoansRequest
-            {
-                InterestRatePerAnnum = InterestRatePerAnnum,
-                LoanAmount = LoanAmount
-            });
+            var result = _businessLoansService.SubmitApplicationFor(
+                application.CompanyData.AsCompanyDataRequest(),
+                new LoansRequest
+                {
+                    InterestRatePerAnnum = InterestRatePerAnnum,
+                    LoanAmount = LoanAmount
+                });
             return (result.Success) ? result.ApplicationId ?? -1 : -1;
         }
     }
