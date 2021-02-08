@@ -23,7 +23,7 @@ namespace SlothEnterprise.ProductApplication.Tests
             _sut = productApplicationService.Object;
             productApplicationService.Setup(m => m.SubmitApplicationFor(It.IsAny<ISellerApplication>())).Returns(1);
             var sellerApplicationMock = new Mock<ISellerApplication>();
-            sellerApplicationMock.SetupProperty(p => p.Product, new ConfidentialInvoiceDiscount());
+            sellerApplicationMock.SetupProperty(p => p.Product, new ConfidentialInvoiceDiscount(_confidentialInvoiceServiceMock.Object));
             sellerApplicationMock.SetupProperty(p => p.CompanyData, new SellerCompanyData());
             _sellerApplication = sellerApplicationMock.Object;
         }
