@@ -34,7 +34,7 @@ namespace SlothEnterprise.ProductApplication.Products
                     InterestRatePerAnnum = InterestRatePerAnnum,
                     LoanAmount = LoanAmount
                 });
-            return (result.Success) ? result.ApplicationId ?? -1 : -1;
+            return result.AsApplicationId();
         }
     }
 }
