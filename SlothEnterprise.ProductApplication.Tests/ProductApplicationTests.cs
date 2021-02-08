@@ -1,39 +1,35 @@
-﻿using FluentAssertions;
-using Moq;
-using SlothEnterprise.External;
-using SlothEnterprise.External.V1;
+﻿using NSubstitute;
+using NUnit.Framework;
 using SlothEnterprise.ProductApplication.Applications;
-using SlothEnterprise.ProductApplication.Products;
-using Xunit;
 
 namespace SlothEnterprise.ProductApplication.Tests
 {
+    [TestFixture]
     public class ProductApplicationTests
     {
-        private readonly IProductApplicationService _sut;
-        private readonly Mock<IConfidentialInvoiceService> _confidentialInvoiceServiceMock = new Mock<IConfidentialInvoiceService>();
-        private readonly ISellerApplication _sellerApplication;
-        private readonly Mock<IApplicationResult> _result = new Mock<IApplicationResult>();
-
-        public ProductApplicationTests()
+        [SetUp]
+        public void Setup()
         {
-            _result.SetupProperty(p => p.ApplicationId, 1);
-            _result.SetupProperty(p => p.Success, true);
-            var productApplicationService = new Mock<IProductApplicationService>();
-            _sut = productApplicationService.Object;
-            productApplicationService.Setup(m => m.SubmitApplicationFor(It.IsAny<ISellerApplication>())).Returns(1);
-            var sellerApplicationMock = new Mock<ISellerApplication>();
-            sellerApplicationMock.SetupProperty(p => p.Product, new ConfidentialInvoiceDiscount(_confidentialInvoiceServiceMock.Object));
-            sellerApplicationMock.SetupProperty(p => p.CompanyData, new SellerCompanyData());
-            _sellerApplication = sellerApplicationMock.Object;
+            _target = new ProductApplicationService();
+            _mockSellerApplication = Substitute.For<ISellerApplication>();
         }
 
-        [Fact]
-        public void ProductApplicationService_SubmitApplicationFor_WhenCalledWithSelectiveInvoiceDiscount_ShouldReturnOne()
+        private ProductApplicationService _target;
+        private ISellerApplication _mockSellerApplication;
+
+        [Test]
+        public void WhenSubmitApplicationFor_ThenProductExternalServiceRequestCalledWithPassedApplication()
         {
-            _confidentialInvoiceServiceMock.Setup(m => m.SubmitApplicationFor(It.IsAny<CompanyDataRequest>(), It.IsAny<decimal>(), It.IsAny<decimal>(), It.IsAny<decimal>())).Returns(_result.Object);
-            var result = _sut.SubmitApplicationFor(_sellerApplication);
-            result.Should().Be(1);
+            _target.SubmitApplicationFor(_mockSellerApplication);
+            _mockSellerApplication.Product.Received(1).ExternalServiceRequest(_mockSellerApplication);
+        }
+
+        [Test]
+        public void WhenSubmitApplicationFor_ThenReturnValueFromExternalServiceRequestIsReturned()
+        {
+            _mockSellerApplication.Product.ExternalServiceRequest(Arg.Any<ISellerApplication>()).Returns(245);
+
+            Assert.That(_target.SubmitApplicationFor(_mockSellerApplication), Is.EqualTo(245));
         }
     }
 }
